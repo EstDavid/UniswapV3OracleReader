@@ -13,8 +13,6 @@ const { BigNumber } = require("ethers");
 // ORACLE
 var uniswapV3Oracle = require('./uniswapV3Oracle.js');
 
-const poolsInitialized = {initialized: false};
-
 //###################################//
 //########## Oracle methods #########//
 //###################################//
@@ -67,6 +65,11 @@ async function initializeOracle(tokenPairsObject) {
                 }
                 tokenPair.uniswapV3OracleSymbol = maxLiquidityPool.poolSymbol;
                 tokenPair.hasUniswapV3Oracle = true;
+                let symbol01 = tokenPair.token0.symbol + tokenPair.token1.symbol;
+                let symbol10 = tokenPair.token1.symbol + tokenPair.token0.symbol;
+                let subfolder = uniswapV3Oracle.priceLibrary[symbol01].observationTimeframe.name
+                appendFile(symbol01, uniswapV3Oracle.priceLibrary[symbol01], subfolder);
+                appendFile(symbol10, uniswapV3Oracle.priceLibrary[symbol10], subfolder);
             }
             catch(symbol) {
                 console.log(`Oracle price array for ${symbol} could not be initialized`);
@@ -81,16 +84,8 @@ async function initializeOracle(tokenPairsObject) {
 
     console.log(`Initialization took ${(endInitialization - startInitialization) / 1000} seconds`);
 
-    poolsInitialized.initialized = true;
     uniswapV3Oracle.listPools();
     listPricePools(tokenPairsObject);
-}
-
-function appendDataToStorage () {
-    for(let pairSymbol in uniswapV3Oracle.priceLibrary) {
-        let priceObservation = uniswapV3Oracle.priceLibrary[pairSymbol];
-        appendFile(pairSymbol, priceObservation);
-    }
 }
 
 async function updateOraclePrices(tokenPairsObject) {
@@ -114,9 +109,10 @@ async function updateOraclePrices(tokenPairsObject) {
         // - There has elapsed enough time since the last check
         if(latestTimestamp === undefined || timestamp > latestTimestamp + minTimeInterval) {
             await uniswapV3Oracle.updatePrice(tokenPair.uniswapV3OracleSymbol, baseTimeframe, minutesHistory);
-            appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[symbol01]);
-            appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[symbol10]);
-            tokenPair.latestUpdateTimestamp = Date.now();
+            let subfolder = uniswapV3Oracle.priceLibrary[symbol01].observationTimeframe.name
+            appendFile(symbol01, uniswapV3Oracle.priceLibrary[symbol01], subfolder);
+            appendFile(symbol10, uniswapV3Oracle.priceLibrary[symbol10], subfolder);
+        tokenPair.latestUpdateTimestamp = Date.now();
         }
     }
 }
@@ -189,4 +185,3 @@ function listPricePools(tokenPairsObject) {
 
 exports.initializeOracle = initializeOracle;
 exports.updateOraclePrices = updateOraclePrices;
-exports.poolsInitialized = poolsInitialized;
