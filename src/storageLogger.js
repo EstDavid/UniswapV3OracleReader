@@ -3,10 +3,6 @@ require('dotenv').config();
 // Instantiates a client. Explicitly use service account credentials by
 // specifying the private key file. All clients in google-cloud-node have this
 // helper, see https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
-const projectId = 'deltabotstorage';
-const keyFilename = './googlecloud/deltabotstorage-d1ae614436d8.json';
-
-const composedSuffix = 'COMPOSED';
 
 // The ID of your GCS bucket
 const bucketName = 'uv3o_5947';
@@ -15,7 +11,7 @@ const bucketName = 'uv3o_5947';
 var {Storage} =require('@google-cloud/storage');
 
 // Creates a client
-const storage = new Storage({projectId, keyFilename});
+const storage = new Storage();
 
 // TODO
 // Basic operations:
