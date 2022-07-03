@@ -17,16 +17,12 @@ var {Storage} =require('@google-cloud/storage');
 // Creates a client
 const storage = new Storage({projectId, keyFilename});
 
-const subfolder = 'SYMBOLS';
-
-const dateData = {};
-
 // TODO
 // Basic operations:
 // [] Get filename root
-function getFilenameRoot() {
+function getFilenameRoot(subfolder) {
 
-    return  `${subfolder}/`;
+    return  `${subfolder !== undefined ? subfolder + '/': ''}`;
 }
 
 // [] Check if there is a filename with the same root
@@ -45,15 +41,15 @@ async function getSpecificDayFiles(filenameRoot) {
 }
 
 // [] Get the new number and create the new filename
-async function getFileName(pairSymbol) {
-    const root = getFilenameRoot();
+async function getFileName(pairSymbol, subfolder) {
+    const root = getFilenameRoot(subfolder);
 
     return root + pairSymbol;
 }
 
 // [] Append file
-async function appendFile(pairSymbol, data) {
-    const filename = await getFileName(pairSymbol).catch(console.error);
+async function appendFile(pairSymbol, data, subfolder) {
+    const filename = await getFileName(pairSymbol, subfolder).catch(console.error);
     
     // Initializing the variable that will store the text to be uploaded to storage
     let dataText;
