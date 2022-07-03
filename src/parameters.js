@@ -85,5 +85,15 @@ const tokenSelectionETH = [
     // 'SNX',
 ];
 
+// Main quote tokens
+const quoteTokensETH = [
+    'USDC',
+    'UDST',
+    'ETH',
+    'WETH',
+    'DAI'
+];
+
 exports.tokenSelectionETH = tokenSelectionETH;
+exports.quoteTokensETH = quoteTokensETH;
 exports.oracleParameters = oracleParameters;
