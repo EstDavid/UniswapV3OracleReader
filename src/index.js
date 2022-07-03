@@ -1,4 +1,4 @@
-var {tokenSelectionETH, oracleParameters} = require('./parameters')
+var {tokenSelectionETH, oracleParameters, quoteTokensETH} = require('./parameters')
 
 var {initializeOracle, updateOraclePrices, poolsInitialized} = require('./oracle');
 
@@ -12,12 +12,12 @@ var {tokensETH} = require('./tokens/tokenData.js');
 //    one file per symbol AND per day
 // [X] Implement size limit on the priceObservationArray from the Oracle,
 //    based on minutesLookBack
-// [] Get a list of the most liquid uniswap V3 pairs
-// [x] Decide on minutes lookback parameter
+// [X] Get a list of the most liquid uniswap V3 tokens
+// [X] Decide on minutes lookback parameter
 // [] Clean code and add comments
 // [] Deploy to heroku
 
-function getTokenPairsObject(tokensList) {
+function getTokenPairsObject(tokensList, quoteTokens) {
     let tokenPairsObject = {};
     let unknownTokens = [];
     for(let i = 0; i < tokensList.length; i += 1) {
@@ -46,9 +46,21 @@ function getTokenPairsObject(tokensList) {
             let token0 = tokensETH[tokensList[i]];
             let token1 = tokensETH[tokensList[j]];
 
+            
+            let indexToken0 = quoteTokens.indexOf(token0.symbol);
+            let indexToken1 = quoteTokens.indexOf(token1.symbol)
+            
+            // If none of the tokens is in the quote tokens list, continue
+            if(indexToken0 === -1 && indexToken1 === -1) {
+                continue;
+            }
+
+            // Determining the order of the tokens, the one included in the quote array will be the quote token
+            // If both are quote tokens, the one with the lower index will be the quote token
+
             let tokenPair = new TokenPair (
-                token0,
-                token1,
+                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token0 : token1,
+                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token1 : token0,
             );
             tokenPairsObject[token0.symbol + token1.symbol] = tokenPair;
         }
@@ -119,7 +131,7 @@ class TokenPair {
     }
 }
 
-const tokenPairsObject = getTokenPairsObject(tokenSelectionETH);
+const tokenPairsObject = getTokenPairsObject(tokenSelectionETH, quoteTokensETH);
 
 initializeOracle(tokenPairsObject);
 
