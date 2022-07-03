@@ -154,14 +154,20 @@ function listPricePools(tokenPairsObject) {
     
     let tableColumns = [
         'Pair Symbol',
-        'Oracle'
+        'Uniswap V3 Symbol'
     ];
     let tableData = [];
+
     for(let tokenPairSymbol in tokenPairsObject) {
+        let tokenPair = tokenPairsObject[tokenPairSymbol];
+        if(!tokenPair.hasUniswapV3Oracle) {
+            continue;
+        }
 
         let rowData = {};
 
         rowData[tableColumns[0]] = tokenPairSymbol;
+        rowData[tableColumns[1]] = tokenPair.uniswapV3OracleSymbol;
 
         tableData.push(rowData);
         logTable.push(rowData);
