@@ -88,7 +88,7 @@ const tokenSelectionETH = [
 // Main quote tokens
 const quoteTokensETH = [
     'USDC',
-    'UDST',
+    'USDT',
     'ETH',
     'WETH',
     'DAI'

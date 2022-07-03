@@ -54,8 +54,8 @@ function getTokenPairsObject(tokensList, quoteTokens) {
             // If both are quote tokens, the one with the lower index will be the quote token
 
             let tokenPair = new TokenPair (
-                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token1 : token0,
-                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token0 : token1,
+                indexToken0 >= 0 && indexToken0 < indexToken1 || indexToken0 >= 0 && indexToken1 === -1 ? token1 : token0,
+                indexToken0 >= 0 && indexToken0 < indexToken1 || indexToken0 >= 0 && indexToken1 === -1 ? token0 : token1,
             );
             tokenPairsObject[token0.symbol + token1.symbol] = tokenPair;
         }
