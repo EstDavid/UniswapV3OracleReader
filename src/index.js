@@ -49,18 +49,13 @@ function getTokenPairsObject(tokensList, quoteTokens) {
             
             let indexToken0 = quoteTokens.indexOf(token0.symbol);
             let indexToken1 = quoteTokens.indexOf(token1.symbol)
-            
-            // If none of the tokens is in the quote tokens list, continue
-            if(indexToken0 === -1 && indexToken1 === -1) {
-                continue;
-            }
 
             // Determining the order of the tokens, the one included in the quote array will be the quote token
             // If both are quote tokens, the one with the lower index will be the quote token
 
             let tokenPair = new TokenPair (
-                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token0 : token1,
                 indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token1 : token0,
+                indexToken0 > 0 && indexToken0 < indexToken1 || indexToken0 > 0 && indexToken1 === -1 ? token0 : token1,
             );
             tokenPairsObject[token0.symbol + token1.symbol] = tokenPair;
         }
