@@ -1,0 +1,30 @@
+{
+  "name": "uniswapv3oracle",
+  "version": "1.0.0",
+  "description": "This App connects to the Uniswap v3 Oracle and retrieve pair prices in realtime",
+  "main": "index.js",
+  "scripts": {
+    "preinstall" : "node gcpSetup.js",
+    "start": "node src/index.js"
+  },
+  "author": "David Esteban",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/storage": "^6.2.2",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.1",
+    "@uniswap/v3-sdk": "^3.8.3",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "bignumber.js": "^9.0.1",
+    "dotenv": "^16.0.1",
+    "ethers": "^5.6.9",
+    "jsbi": "^4.3.0",
+    "lodash": "^4.17.21",
+    "web3": "^1.7.4"
+  }
+}
