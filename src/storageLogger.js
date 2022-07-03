@@ -137,4 +137,6 @@ async function downloadByRootIntoMemory(filenameRoot) {
     }
 }
 
+getSpecificDayFiles('30 seconds').then(console.log);
+
 exports.appendFile = appendFile;
