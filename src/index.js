@@ -15,7 +15,7 @@ var {tokensETH} = require('./tokens/tokenData.js');
 // [X] Get a list of the most liquid uniswap V3 tokens
 // [X] Decide on minutes lookback parameter
 // [] Clean code and add comments
-// [] Deploy to heroku
+// [X] Deploy to heroku
 
 function getTokenPairsObject(tokensList, quoteTokens) {
     let tokenPairsObject = {};
@@ -52,12 +52,13 @@ function getTokenPairsObject(tokensList, quoteTokens) {
 
             // Determining the order of the tokens, the one included in the quote array will be the quote token
             // If both are quote tokens, the one with the lower index will be the quote token
+            let token0IsQuoteToken = indexToken0 >= 0 && indexToken0 < indexToken1 || indexToken0 >= 0 && indexToken1 === -1;
 
             let tokenPair = new TokenPair (
-                indexToken0 >= 0 && indexToken0 < indexToken1 || indexToken0 >= 0 && indexToken1 === -1 ? token1 : token0,
-                indexToken0 >= 0 && indexToken0 < indexToken1 || indexToken0 >= 0 && indexToken1 === -1 ? token0 : token1,
+                token0IsQuoteToken ? token1 : token0,
+                token0IsQuoteToken ? token0 : token1,
             );
-            tokenPairsObject[token0.symbol + token1.symbol] = tokenPair;
+            tokenPairsObject[ tokenPair.name ] = tokenPair;
         }
     }
     if(unknownTokens.length > 0) {

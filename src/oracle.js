@@ -59,8 +59,8 @@ async function initializeOracle(tokenPairsObject) {
                 let minutesHistory = oracleParameters.initialLookbackMinutes;
                 let maxExtraMinutes = oracleParameters.maxExtraMinutes;
                 await uniswapV3Oracle.updatePrice(maxLiquidityPool.poolSymbol, baseTimeframe, minutesHistory, maxExtraMinutes);
-                if(uniswapV3Oracle.priceLibrary[srcToken.symbol + destToken.symbol] !== undefined &&
-                    uniswapV3Oracle.priceLibrary[srcToken.symbol + destToken.symbol].observations === undefined) {
+                if(uniswapV3Oracle.priceLibrary[tokenPairSymbol] !== undefined &&
+                    uniswapV3Oracle.priceLibrary[tokenPairSymbol].observations === undefined) {
                         throw (maxLiquidityPool.poolSymbol);
                 }
                 tokenPair.uniswapV3OracleSymbol = maxLiquidityPool.poolSymbol;
