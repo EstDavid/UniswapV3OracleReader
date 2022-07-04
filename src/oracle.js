@@ -28,16 +28,15 @@ async function initializeOracle(tokenPairsObject) {
     
     for(let tokenPairSymbol in tokenPairsObject) {
         let tokenPair = tokenPairsObject[tokenPairSymbol];
-        let sequence = tokenPair.sequences[tokenPairSymbol];
-        let srcToken = sequence.srcToken;
-        let destToken = sequence.destToken;
+        let token0 = tokenPair.token0;
+        let token1 = tokenPair.token1;
         let liquidity;
         let maxLiquidityPool;
         let maxLiquidity = BigNumber.from(0);
 
         for(let fee of feeArray) {
             try {
-                let pool = await uniswapV3Oracle.initializePool(srcToken.address, destToken.address, fee);
+                let pool = await uniswapV3Oracle.initializePool(token1.address, token0.address, fee);
 
                 liquidity = pool.pool.liquidity;
 
@@ -46,11 +45,11 @@ async function initializeOracle(tokenPairsObject) {
                     maxLiquidityPool = pool;
                 }            
     
-                // console.log(`The total liquidity of the ${srcToken.symbol}-${destToken.symbol} (fee:${fee}) on Uniswap Oracle is ${liquidity.decimalPlaces(4)}`);        
+                // console.log(`The total liquidity of the ${token1.symbol}-${token0.symbol} (fee:${fee}) on Uniswap Oracle is ${liquidity.decimalPlaces(4)}`);        
             }
             catch(error) {
                 // console.log(error);
-                // console.log(`No enough liquidity on pair ${srcToken.symbol}-${destToken.symbol} (fee:${fee}) on Uniswap V3 price oracle`);
+                // console.log(`No enough liquidity on pair ${token1.symbol}-${token0.symbol} (fee:${fee}) on Uniswap V3 price oracle`);
             }
         }
         if(maxLiquidityPool !== undefined) {
@@ -73,7 +72,7 @@ async function initializeOracle(tokenPairsObject) {
             }
         }
         else {
-            console.log(`No Oracle pool was found for the ${srcToken.symbol + destToken.symbol} pair on Uniswap V3`);
+            console.log(`No Oracle pool was found for the ${tokenPairSymbol} pair on Uniswap V3`);
         }
     }
 
