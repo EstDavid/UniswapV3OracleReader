@@ -89,6 +89,8 @@ class PriceObservationArray {
     symbol: string;
     baseToken: Token;
     quoteToken: Token;
+    poolAddress: string;
+    poolFee: string;
     observationTimeframe: Timeframe;
     startTimestamp?: number;
     endTimestamp?: number;
@@ -106,12 +108,16 @@ class PriceObservationArray {
                     symbol: string,
                     baseToken: Token,
                     quoteToken: Token,
+                    poolAddress: string,
+                    poolFee: string,
                     observationTimeframe: Timeframe,
                     extraMinutesData: number
                 ) {
         this.symbol = symbol;
         this.baseToken = baseToken;
         this.quoteToken = quoteToken;
+        this.poolAddress = poolAddress;
+        this.poolFee = poolFee;
         this.observationTimeframe = observationTimeframe;
         this.arrayTypes = ['open', 'high', 'low', 'close'];
         this.extraMinutesData = extraMinutesData;
@@ -805,6 +811,9 @@ export async function updatePrice(
     let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
     let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
 
+    let poolAddress = poolObject.pool.address;
+    let poolFee = poolObject.immutables.fee.toString();
+    
     let price0Symbol = token0.symbol as string + token1.symbol as string;
     let price1Symbol = token1.symbol as string + token0.symbol as string;
 
@@ -816,6 +825,8 @@ export async function updatePrice(
             price0Symbol,
             token0,
             token1,
+            poolAddress,
+            poolFee,
             baseTimeframe,
             maxExtraMinutes
         );
@@ -830,6 +841,8 @@ export async function updatePrice(
             price1Symbol,
             token1,
             token0,
+            poolAddress,
+            poolFee,
             baseTimeframe,
             maxExtraMinutes
         );

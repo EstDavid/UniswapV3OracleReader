@@ -31,10 +31,12 @@ const tokensLibrary = {};
 const addressesDictionary = {};
 // Interface for price observation
 class PriceObservationArray {
-    constructor(symbol, baseToken, quoteToken, observationTimeframe, extraMinutesData) {
+    constructor(symbol, baseToken, quoteToken, poolAddress, poolFee, observationTimeframe, extraMinutesData) {
         this.symbol = symbol;
         this.baseToken = baseToken;
         this.quoteToken = quoteToken;
+        this.poolAddress = poolAddress;
+        this.poolFee = poolFee;
         this.observationTimeframe = observationTimeframe;
         this.arrayTypes = ['open', 'high', 'low', 'close'];
         this.extraMinutesData = extraMinutesData;
@@ -601,19 +603,21 @@ async function updatePrice(poolSymbol, baseTimeframe, minutesHistory, maxExtraMi
     // Retrieving token0 and token1
     let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
     let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
+    let poolAddress = poolObject.pool.address;
+    let poolFee = poolObject.immutables.fee.toString();
     let price0Symbol = token0.symbol + token1.symbol;
     let price1Symbol = token1.symbol + token0.symbol;
     let price0Observation;
     let price1Observation;
     if (exports.priceLibrary[price0Symbol] === undefined) {
-        price0Observation = new PriceObservationArray(price0Symbol, token0, token1, baseTimeframe, maxExtraMinutes);
+        price0Observation = new PriceObservationArray(price0Symbol, token0, token1, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
         exports.priceLibrary[price0Observation.symbol] = price0Observation;
     }
     else {
         price0Observation = exports.priceLibrary[price0Symbol];
     }
     if (exports.priceLibrary[price1Symbol] === undefined) {
-        price1Observation = new PriceObservationArray(price1Symbol, token1, token0, baseTimeframe, maxExtraMinutes);
+        price1Observation = new PriceObservationArray(price1Symbol, token1, token0, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
         exports.priceLibrary[price1Observation.symbol] = price1Observation;
     }
     else {
