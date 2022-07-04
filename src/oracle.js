@@ -89,23 +89,18 @@ async function updateOraclePrices(tokenPairsObject) {
     let minutesHistory = oracleParameters.updateLookbackMinutes;  
     for(let tokenPairSymbol in tokenPairsObject) {
         let tokenPair = tokenPairsObject[tokenPairSymbol];
+        // Call update price function only if:
+        // - The token pair has uniswapV3Oracle
+        // - The oracle has produced price data
         if(!tokenPair.hasUniswapV3Oracle || 
         uniswapV3Oracle.priceLibrary[tokenPairSymbol] === undefined) {
             continue;
         }
-        let timestamp = Date.now();
-        let minTimeInterval = (minutesHistory - 2) * 60 * 1000;
-        let latestTimestamp = tokenPair.latestUpdateTimestamp;
-        // Call update price function only if:
-        // - The token pair has uniswapV3Oracle
-        // - The oracle has produced price data
-        // - There has elapsed enough time since the last check
-        if(latestTimestamp === undefined || timestamp > latestTimestamp + minTimeInterval) {
-            await uniswapV3Oracle.updatePrice(tokenPair.uniswapV3OracleSymbol, baseTimeframe, minutesHistory);
-            let subfolder = uniswapV3Oracle.priceLibrary[tokenPairSymbol].observationTimeframe.name
-            appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[tokenPairSymbol], subfolder);
-            tokenPair.latestUpdateTimestamp = Date.now();
-        }
+        
+        await uniswapV3Oracle.updatePrice(tokenPair.uniswapV3OracleSymbol, baseTimeframe, minutesHistory);
+        let subfolder = uniswapV3Oracle.priceLibrary[tokenPairSymbol].observationTimeframe.name
+        appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[tokenPairSymbol], subfolder);
+        tokenPair.latestUpdateTimestamp = Date.now();
     }
 }
 
