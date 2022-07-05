@@ -8,8 +8,6 @@ const ethers_1 = require("ethers");
 const v3_sdk_1 = require("@uniswap/v3-sdk");
 const sdk_core_1 = require("@uniswap/sdk-core");
 const IUniswapV3Pool_json_1 = require("@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json");
-const UniswapV3Factory_json_1 = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json");
-const Quoter_json_1 = require("@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json");
 const v3_sdk_2 = require("@uniswap/v3-sdk");
 const jsbi_1 = __importDefault(require("jsbi"));
 require('dotenv').config();
@@ -19,12 +17,8 @@ const Q96 = jsbi_1.default.exponentiate(jsbi_1.default.BigInt(2), jsbi_1.default
 const Q192 = jsbi_1.default.exponentiate(Q96, jsbi_1.default.BigInt(2));
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers_1.ethers.providers.JsonRpcProvider(RPC_URL);
-// Creation of the factory contract
+// Factory address
 const factoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-const factoryContract = new ethers_1.ethers.Contract(factoryAddress, UniswapV3Factory_json_1.abi, provider);
-// Creation of the quoter contract
-const quoterAddress = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
-const quoterContract = new ethers_1.ethers.Contract(quoterAddress, Quoter_json_1.abi, provider);
 ;
 ;
 const tokensLibrary = {};
@@ -479,6 +473,36 @@ function listPools() {
     }
 }
 exports.listPools = listPools;
+async function updatePrice(poolSymbol, baseTimeframe, minutesHistory, maxExtraMinutes) {
+    // console.log(numberObservations, 'number of observations');
+    const poolObject = exports.poolsCollection[poolSymbol];
+    // Retrieving token0 and token1
+    let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
+    let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
+    let poolAddress = poolObject.pool.address;
+    let poolFee = poolObject.immutables.fee.toString();
+    let price0Symbol = token0.symbol + token1.symbol;
+    let price1Symbol = token1.symbol + token0.symbol;
+    let price0Observation;
+    let price1Observation;
+    if (exports.priceLibrary[price0Symbol] === undefined) {
+        price0Observation = new PriceObservationArray(price0Symbol, token0, token1, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
+        exports.priceLibrary[price0Observation.symbol] = price0Observation;
+    }
+    else {
+        price0Observation = exports.priceLibrary[price0Symbol];
+    }
+    if (exports.priceLibrary[price1Symbol] === undefined) {
+        price1Observation = new PriceObservationArray(price1Symbol, token1, token0, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
+        exports.priceLibrary[price1Observation.symbol] = price1Observation;
+    }
+    else {
+        price1Observation = exports.priceLibrary[price1Symbol];
+    }
+    console.log('Retrieving price history for', poolSymbol);
+    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesHistory);
+}
+exports.updatePrice = updatePrice;
 async function getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, secondsBack) {
     let samplingInterval = baseTimeframe.seconds;
     let observationArray;
@@ -597,33 +621,3 @@ async function getPoolState(poolContract) {
     };
     return PoolState;
 }
-async function updatePrice(poolSymbol, baseTimeframe, minutesHistory, maxExtraMinutes) {
-    // console.log(numberObservations, 'number of observations');
-    const poolObject = exports.poolsCollection[poolSymbol];
-    // Retrieving token0 and token1
-    let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
-    let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
-    let poolAddress = poolObject.pool.address;
-    let poolFee = poolObject.immutables.fee.toString();
-    let price0Symbol = token0.symbol + token1.symbol;
-    let price1Symbol = token1.symbol + token0.symbol;
-    let price0Observation;
-    let price1Observation;
-    if (exports.priceLibrary[price0Symbol] === undefined) {
-        price0Observation = new PriceObservationArray(price0Symbol, token0, token1, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
-        exports.priceLibrary[price0Observation.symbol] = price0Observation;
-    }
-    else {
-        price0Observation = exports.priceLibrary[price0Symbol];
-    }
-    if (exports.priceLibrary[price1Symbol] === undefined) {
-        price1Observation = new PriceObservationArray(price1Symbol, token1, token0, poolAddress, poolFee, baseTimeframe, maxExtraMinutes);
-        exports.priceLibrary[price1Observation.symbol] = price1Observation;
-    }
-    else {
-        price1Observation = exports.priceLibrary[price1Symbol];
-    }
-    console.log('Retrieving price history for', poolSymbol);
-    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesHistory);
-}
-exports.updatePrice = updatePrice;
