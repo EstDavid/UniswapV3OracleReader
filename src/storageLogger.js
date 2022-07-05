@@ -40,31 +40,21 @@ async function getSpecificDayFiles(filenameRoot) {
 async function getFileName(pairSymbol, subfolder) {
     const root = getFilenameRoot(subfolder);
 
-    return root + pairSymbol;
-}
-
-// [] Get the new number and create the new filename
-async function getFileNameJson(pairSymbol, subfolder) {
-    const root = getFilenameRoot(subfolder);
-
     return root + pairSymbol + '.json';
 }
 
 // [] Append file
 async function appendFile(pairSymbol, data, subfolder) {
     const filename = await getFileName(pairSymbol, subfolder).catch(console.error);
-    const filenameJson = await getFileNameJson(pairSymbol, subfolder).catch(console.error);
     
     // Initializing the variable that will store the text to be uploaded to storage
     let dataText;
 
-    // let { files } = await getSpecificDayFiles(filename);
-
-    let { files } = await getSpecificDayFiles(filenameJson);
+    let { files } = await getSpecificDayFiles(filename);
 
     if(files.length > 0) {
          // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
-         let cloudFileContent = await downloadIntoMemory(filenameJson);
+         let cloudFileContent = await downloadIntoMemory(filename);
          let content = cloudFileContent[0];  
          let endTimestamp = content.endTimestamp;
          let timestamps = Object.keys(data.observations);
@@ -82,16 +72,8 @@ async function appendFile(pairSymbol, data, subfolder) {
         dataText = JSON.stringify(data);
     }
 
-    await storage.bucket(bucketName).file(filenameJson).save(dataText);
-    console.log(`${filenameJson} uploaded to ${bucketName}`);
-    if(files.length > 0) {
-        try {
-            await storage.bucket(bucketName).file(filename).delete().catch(error => console('Deletion error', error));
-            console.log(`${filename} was deleted from ${bucketName}`)
-        } catch (error) {
-            console.log(error)
-        } 
-    }
+    await storage.bucket(bucketName).file(filename).save(dataText);
+    console.log(`${filename} uploaded to ${bucketName}`);
 }
 
 // [] Delete old files
