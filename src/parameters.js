@@ -1,13 +1,20 @@
 // Parameters to retrieve data from the Uniswap v3 Oracle
 const oracleParameters = {
-    baseTimeframe: 'seconds30',
-    analysisTimeframe: 'minutes5',
-    nPeriodsATR: 20,
-    nPeriodsSmoothing: 40,
+    baseTimeframe: 'seconds30', 
+    // At what time interval will the observations be extracted
+    // Possible values: seconds1, seconds5, ..., seconds30, minutes1, ..., minutes30, ..., hours1, ...
+    // For all the values check the 'timeframes: TimeframeCollection' object in 'uniswapV3Oracle.ts'
+
     initialLookbackMinutes: 60 * 8,
+    // When initializing the pool object and making the first price data request, how far back
+    // in time the request will go
+
     updateLookbackMinutes: 15,
-    maxExtraMinutes: 180 // After retrieving the first set of observations, when
-                         // will earliest observations begin to be flushed
+    // When updating new price data after the pool is initialized, how far back in time does the data go
+
+    maxExtraMinutes: 180 
+    // After retrieving the first set of observations, when will earliest observations begin to be flushed
+    // in order to free up memory from the 'priceLibrary' object
 }
 
 // ETH Tokens
