@@ -104,44 +104,6 @@ async function updateOraclePrices(tokenPairsObject) {
     }
 }
 
-async function getOracleData (tokenPairsObject) {
-    await getUniswapV3Data(tokenPairsObject);
-}
-
-async function getUniswapV3Data(tokenPairsObject) {
-    for(let tokenPairSymbol in tokenPairsObject) {
-        let tokenPair = tokenPairsObject[tokenPairSymbol];
-        if(!tokenPair.hasUniswapV3Oracle) {
-            continue;
-        }
-        try {
-            for(let sequenceSymbol in tokenPair.sequences) {
-                if(uniswapV3Oracle.priceLibrary[sequenceSymbol] === undefined) {
-                    continue;
-                }
-                if(uniswapV3Oracle.priceLibrary[sequenceSymbol] !== undefined &&
-                    uniswapV3Oracle.priceLibrary[sequenceSymbol].observations === undefined) {
-                    console.log(`No price data found for pair ${sequenceSymbol} on Uniswap V3 Oracle`);
-                    continue;
-                }
-                let timeframe = uniswapV3Oracle.timeframes[oracleParameters.analysisTimeframe];
-                let nPeriodsATR = oracleParameters.nPeriodsATR;
-                let nPeriodsSmoothing = oracleParameters.nPeriodsSmoothing;
-                let sequence = tokenPair.sequences[sequenceSymbol];
-                let priceArray = uniswapV3Oracle.priceLibrary[sequenceSymbol].getArray(timeframe, 'close');
-                let volatilityArray = uniswapV3Oracle.priceLibrary[sequenceSymbol].getVolatility(timeframe, nPeriodsATR, nPeriodsSmoothing);
-                let timestampsArray = Object.keys(priceArray);
-                let latestTimestamp = Math.max.apply(null, timestampsArray);
-                sequence.oraclePrice = new BigNumber(priceArray[latestTimestamp]);
-                sequence.oracleVolatility = new BigNumber(volatilityArray[latestTimestamp]);
-            }
-        }
-        catch(error) {
-            console.log(error);
-        }
-    }
-}
-
 function listPricePools(tokenPairsObject) {
     let logColumns = [];
     let logTable = [];
