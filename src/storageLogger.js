@@ -86,7 +86,7 @@ async function appendFile(pairSymbol, data, subfolder) {
     console.log(`${filenameJson} uploaded to ${bucketName}`);
     if(files.length > 0) {
         try {
-            await storage.bucket.file(filename).delete().catch(error => console('Deletion error', error));
+            await storage.bucket(bucketName).file(filename).delete().catch(error => console('Deletion error', error));
             console.log(`${filename} was deleted from ${bucketName}`)
         } catch (error) {
             console.log(error)
