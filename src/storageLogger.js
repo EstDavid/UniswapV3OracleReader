@@ -5,7 +5,7 @@ require('dotenv').config();
 // helper, see https://github.com/GoogleCloudPlatform/google-cloud-node/blob/master/docs/authentication.md
 
 // The ID of your GCS bucket
-const bucketName = 'uv3o_5947';
+const bucketName = process.env.BUCKET_NAME;
 
 // Imports the Google Cloud client library
 var {Storage} =require('@google-cloud/storage');
@@ -43,14 +43,24 @@ async function getFileName(pairSymbol, subfolder) {
     return root + pairSymbol;
 }
 
+// [] Get the new number and create the new filename
+async function getFileNameJson(pairSymbol, subfolder) {
+    const root = getFilenameRoot(subfolder);
+
+    return root + pairSymbol + '.json';
+}
+
 // [] Append file
 async function appendFile(pairSymbol, data, subfolder) {
     const filename = await getFileName(pairSymbol, subfolder).catch(console.error);
+    const filenameJson = await getFileNameJson(pairSymbol, subfolder).catch(console.error);
     
     // Initializing the variable that will store the text to be uploaded to storage
     let dataText;
 
     let { files } = await getSpecificDayFiles(filename);
+
+    let { filesJson } = await getSpecificDayFiles(filenameJson);
 
     if(files.length > 0) {
         // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
@@ -66,30 +76,35 @@ async function appendFile(pairSymbol, data, subfolder) {
             }
         }
         dataText = JSON.stringify(content);
+    } else if(filesJson.length > 0) {
+         // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
+         let cloudFileContent = await downloadIntoMemory(filenameJson);
+         let content = cloudFileContent[0];  
+         let endTimestamp = content.endTimestamp;
+         let timestamps = Object.keys(data.observations);
+         for(let timestamp of timestamps) {
+             let timestampNumber = parseInt(timestamp)
+             if(timestampNumber >  endTimestamp) {
+                 content.observations[timestampNumber] = data.observations[timestampNumber];
+                 content.endTimestamp = timestampNumber;
+             }
+         }
+         dataText = JSON.stringify(content);       
     }
     // If there is no file on the cloud storage, upload all the data
     else {
         dataText = JSON.stringify(data);
     }
 
-    await storage.bucket(bucketName).file(filename).save(dataText);
-    console.log(`${filename} uploaded to ${bucketName}`);    
-}
-
-// Composing:
-// [] Check that it is time to compose files
-// [] Compose the files corresponding to the selected time slot
-async function composeFiles(filenameRoot) {
-    const bucket = storage.bucket(bucketName);
-    const files = await getSpecificDayFiles(filenameRoot).catch(console.error);
-
-    const newFilename = filenameRoot + composedSuffix;
-    // await bucket.file(newFilename).delete();
-    const filenames = files.filenames;
-    if (filenames.length > 0) {
-        await bucket.combine(filenames, newFilename);
-        console.log(`${newFilename} file was composed`);
-        await deleteFiles(filenameRoot, newFilename).catch(console.error);
+    await storage.bucket(bucketName).file(filenameJson).save(dataText);
+    console.log(`${filenameJson} uploaded to ${bucketName}`);
+    if(files.length > 0) {
+        try {
+            await bucket.file(filename).delete().catch(error => console('Deletion error', error));
+            console.log(`${filename} was deleted from ${bucketName}`)
+        } catch (error) {
+            console.log(error)
+        } 
     }
 }
 
@@ -124,17 +139,6 @@ async function downloadIntoMemory(filename) {
     }
     
     return content;
-}
-
-async function downloadByRootIntoMemory(filenameRoot) {
-    const files = await getSpecificDayFiles(filenameRoot);
-    const filenames = files.filenames;
-    let rootData = [];
-
-    for(let filename of filenames) {
-        let data = await downloadIntoMemory(filename);
-        rootData = [...rootData, ...data];
-    }
 }
 
 exports.appendFile = appendFile;
