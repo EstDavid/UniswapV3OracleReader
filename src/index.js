@@ -5,17 +5,11 @@ var {initializeOracle, updateOraclePrices, poolsInitialized} = require('./oracle
 // Retrieving tokens
 var {tokensETH} = require('./tokens/tokenData.js');
 
-// [X] Implement function to save to cloud storage
-// [X] Create cloud storage file
-// [X] Implement function to read cloud storage and add only new information
-// [X] Change folder structure so there is only one file per symbol and not
-//    one file per symbol AND per day
-// [X] Implement size limit on the priceObservationArray from the Oracle,
-//    based on minutesLookBack
-// [X] Get a list of the most liquid uniswap V3 tokens
-// [X] Decide on minutes lookback parameter
-// [] Clean code and add comments
-// [X] Deploy to heroku
+// [] Delete the explicit use of bucket name
+// [] Extract raw output data for the WETHUSDC pair
+// [] Change all the file names to .json
+// [] Check rules for new data inclusion/exclusion
+
 
 function getTokenPairsObject(tokensList, quoteTokens) {
     let tokenPairsObject = {};
