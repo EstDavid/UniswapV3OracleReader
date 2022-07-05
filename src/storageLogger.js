@@ -58,11 +58,11 @@ async function appendFile(pairSymbol, data, subfolder) {
     // Initializing the variable that will store the text to be uploaded to storage
     let dataText;
 
-    let { files } = await getSpecificDayFiles(filename);
+    // let { files } = await getSpecificDayFiles(filename);
 
-    let { filesJson } = await getSpecificDayFiles(filenameJson);
+    let { files } = await getSpecificDayFiles(filenameJson);
 
-    if(filesJson.length > 0) {
+    if(files.length > 0) {
          // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
          let cloudFileContent = await downloadIntoMemory(filenameJson);
          let content = cloudFileContent[0];  
