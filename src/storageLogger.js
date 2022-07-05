@@ -62,21 +62,7 @@ async function appendFile(pairSymbol, data, subfolder) {
 
     let { filesJson } = await getSpecificDayFiles(filenameJson);
 
-    if(files.length > 0) {
-        // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
-        let cloudFileContent = await downloadIntoMemory(filename);
-        let content = cloudFileContent[0];  
-        let endTimestamp = content.endTimestamp;
-        let timestamps = Object.keys(data.observations);
-        for(let timestamp of timestamps) {
-            let timestampNumber = parseInt(timestamp)
-            if(timestampNumber >  endTimestamp) {
-                content.observations[timestampNumber] = data.observations[timestampNumber];
-                content.endTimestamp = timestampNumber;
-            }
-        }
-        dataText = JSON.stringify(content);
-    } else if(filesJson.length > 0) {
+    if(filesJson.length > 0) {
          // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
          let cloudFileContent = await downloadIntoMemory(filenameJson);
          let content = cloudFileContent[0];  
@@ -100,7 +86,7 @@ async function appendFile(pairSymbol, data, subfolder) {
     console.log(`${filenameJson} uploaded to ${bucketName}`);
     if(files.length > 0) {
         try {
-            await bucket.file(filename).delete().catch(error => console('Deletion error', error));
+            await storage.bucket.file(filename).delete().catch(error => console('Deletion error', error));
             console.log(`${filename} was deleted from ${bucketName}`)
         } catch (error) {
             console.log(error)
