@@ -90,8 +90,10 @@ async function appendFile(pairSymbol, data, subfolder) {
         const newTimestamps = Object.keys(content.observations);
 
 
-        content.startTimestamp = Math.min(...newTimestamps);
-        content.endTimestamp = Math.max(...newTimestamps);
+        // content.startTimestamp = Math.min(...newTimestamps);
+        // content.endTimestamp = Math.max(...newTimestamps);
+
+
 
          dataText = JSON.stringify(content);       
     }

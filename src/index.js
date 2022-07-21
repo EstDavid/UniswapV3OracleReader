@@ -142,6 +142,7 @@ const runUpdateSequence = async() => {
 
     modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 18)}
     await updateOraclePrices(tokenPairsObject, modifiedParameters);
+    console.log('exiting')
 
 }
 
