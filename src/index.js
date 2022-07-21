@@ -2,13 +2,14 @@ var {tokenSelectionETH, oracleParameters, quoteTokensETH} = require('./parameter
 
 var {initializeOracle, updateOraclePrices, poolsInitialized} = require('./oracle');
 
+
 // Retrieving tokens
 var {tokensETH} = require('./tokens/tokenData.js');
 
-// [] Delete the explicit use of bucket name
-// [] Extract raw output data for the WETHUSDC pair
+// [X] Delete the explicit use of bucket name
+// [X] Extract raw output data for the WETHUSDC pair
 // [] Change all the file names to .json
-// [] Check rules for new data inclusion/exclusion
+// [X] Check rules for new data inclusion/exclusion
 
 
 function getTokenPairsObject(tokensList, quoteTokens) {
@@ -127,4 +128,21 @@ initializeOracle(tokenPairsObject);
 
 const updateInterval = (oracleParameters.updateLookbackMinutes - 3) * 60 * 1000;
 
-setInterval(updateOraclePrices, updateInterval, tokenPairsObject);
+// setInterval(updateOraclePrices, updateInterval, tokenPairsObject);
+
+const runUpdateSequence = async() => {
+    let modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1)}
+    await updateOraclePrices(tokenPairsObject, modifiedParameters);
+
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 6)}
+    await updateOraclePrices(tokenPairsObject, modifiedParameters);
+
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 12)}
+    await updateOraclePrices(tokenPairsObject, modifiedParameters);
+
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 18)}
+    await updateOraclePrices(tokenPairsObject, modifiedParameters);
+
+}
+
+runUpdateSequence();

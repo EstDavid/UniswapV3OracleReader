@@ -45,12 +45,19 @@ async function getFileName(pairSymbol, subfolder) {
 
 // [] Append file
 async function appendFile(pairSymbol, data, subfolder) {
+
     const filename = await getFileName(pairSymbol, subfolder).catch(console.error);
     
     // Initializing the variable that will store the text to be uploaded to storage
     let dataText;
 
     let { files } = await getSpecificDayFiles(filename);
+
+    const currentTime = new Date();
+    const currentTimeSeconds = currentTime.getTime() / 1000;
+    const minimumTimestamp = currentTimeSeconds - 60 * 60 * 24 * 365 * 3;
+
+    // console.log(minimumTimestamp)
 
     if(files.length > 0) {
          // If there is already a file in the cloud storage, upload only the data generated after the last timestamp
@@ -59,12 +66,33 @@ async function appendFile(pairSymbol, data, subfolder) {
          let endTimestamp = content.endTimestamp;
          let timestamps = Object.keys(data.observations);
          for(let timestamp of timestamps) {
-             let timestampNumber = parseInt(timestamp)
-             if(timestampNumber >  endTimestamp) {
+             let timestampNumber = parseInt(timestamp);
+           
+            //  if(timestampNumber >  endTimestamp) {
                  content.observations[timestampNumber] = data.observations[timestampNumber];
-                 content.endTimestamp = timestampNumber;
-             }
+                //  content.endTimestamp = timestampNumber;
+            //  }
          }
+
+         let timestampsContent = Object.keys(content.observations);
+
+         for(let timestamp of timestampsContent) {
+            let timestampNumber = parseInt(timestamp);
+          
+            if(timestampNumber < minimumTimestamp) {
+                // console.log(content.observations[timestampNumber], timestampNumber)
+                const {[timestampNumber.toString()]: value, ...newContent } = content.observations;
+                content.observations = newContent;
+                // console.log(content.observations[timestampNumber], timestampNumber)
+             }
+        }
+
+        const newTimestamps = Object.keys(content.observations);
+
+
+        content.startTimestamp = Math.min(...newTimestamps);
+        content.endTimestamp = Math.max(...newTimestamps);
+
          dataText = JSON.stringify(content);       
     }
     // If there is no file on the cloud storage, upload all the data

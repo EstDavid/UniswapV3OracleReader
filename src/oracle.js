@@ -16,7 +16,7 @@ var uniswapV3Oracle = require('./uniswapV3Oracle.js');
 //###################################//
 //########## Oracle methods #########//
 //###################################//
-async function initializeOracle(tokenPairsObject) {
+async function initializeOracle(tokenPairsObject, parameters) {
     const startInitialization = new Date();
 
     // Checking available data on Uniswap V3
@@ -54,10 +54,11 @@ async function initializeOracle(tokenPairsObject) {
         }
         if(maxLiquidityPool !== undefined) {
             try {
-                let baseTimeframe = uniswapV3Oracle.timeframes[oracleParameters.baseTimeframe];
-                let minutesHistory = oracleParameters.initialLookbackMinutes;
-                let maxExtraMinutes = oracleParameters.maxExtraMinutes;
-                await uniswapV3Oracle.updatePrice(maxLiquidityPool.poolSymbol, baseTimeframe, minutesHistory, maxExtraMinutes);
+                let baseTimeframe = uniswapV3Oracle.timeframes[parameters.baseTimeframe];
+                let minutesAgo = parameters.minutesAgo;
+                let rangeMinutes = parameters.rangeMinutes;
+                let maxExtraMinutes = parameters.maxExtraMinutes;
+                await uniswapV3Oracle.updatePrice(maxLiquidityPool.poolSymbol, baseTimeframe, minutesAgo, rangeMinutes, maxExtraMinutes);
                 if(uniswapV3Oracle.priceLibrary[tokenPairSymbol] !== undefined &&
                     uniswapV3Oracle.priceLibrary[tokenPairSymbol].observations === undefined) {
                         throw (maxLiquidityPool.poolSymbol);
@@ -84,9 +85,10 @@ async function initializeOracle(tokenPairsObject) {
     listPricePools(tokenPairsObject);
 }
 
-async function updateOraclePrices(tokenPairsObject) {
-    let baseTimeframe = uniswapV3Oracle.timeframes[oracleParameters.baseTimeframe];
-    let minutesHistory = oracleParameters.updateLookbackMinutes;  
+async function updateOraclePrices(tokenPairsObject, parameters) {
+    let baseTimeframe = uniswapV3Oracle.timeframes[parameters.baseTimeframe];
+    let minutesAgo = parameters.minutesAgo;
+    let rangeMinutes = parameters.rangeMinutes; 
     for(let tokenPairSymbol in tokenPairsObject) {
         let tokenPair = tokenPairsObject[tokenPairSymbol];
         // Call update price function only if:
@@ -97,7 +99,7 @@ async function updateOraclePrices(tokenPairsObject) {
             continue;
         }
         
-        await uniswapV3Oracle.updatePrice(tokenPair.uniswapV3OracleSymbol, baseTimeframe, minutesHistory);
+        await uniswapV3Oracle.updatePrice(tokenPair.uniswapV3OracleSymbol, baseTimeframe, minutesAgo, rangeMinutes);
         let subfolder = uniswapV3Oracle.priceLibrary[tokenPairSymbol].observationTimeframe.name
         appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[tokenPairSymbol], subfolder);
         tokenPair.latestUpdateTimestamp = Date.now();

@@ -5,9 +5,12 @@ const oracleParameters = {
     // Possible values: seconds1, seconds5, ..., seconds30, minutes1, ..., minutes30, ..., hours1, ...
     // For all the values check the 'timeframes: TimeframeCollection' object in 'uniswapV3Oracle.ts'
 
-    initialLookbackMinutes: 60 * 8,
+    minutesAgo: 60 * (24 * 2 - 12),
     // When initializing the pool object and making the first price data request, how far back
     // in time the request will go
+
+    rangeMinutes: 60 * 8,
+    // From the minutesAgo parameter, how many minutes in the future will be sampled
 
     updateLookbackMinutes: 15,
     // When updating new price data after the pool is initialized, how far back in time does the data go

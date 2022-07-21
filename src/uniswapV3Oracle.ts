@@ -631,8 +631,9 @@ export function listPools() {
 
 export async function updatePrice(
                                     poolSymbol: string,
-                                    baseTimeframe: Timeframe, 
-                                    minutesHistory: number,
+                                    baseTimeframe: Timeframe,
+                                    minutesAgo: number,
+                                    rangeMinutes: number,
                                     maxExtraMinutes: number) {
     // console.log(numberObservations, 'number of observations');
 
@@ -685,7 +686,7 @@ export async function updatePrice(
 
     console.log('Retrieving price history for', poolSymbol);
 
-    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesHistory);
+    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesAgo, 60 * rangeMinutes);
 }
 
 async function getPriceObservations(
@@ -693,7 +694,8 @@ async function getPriceObservations(
                                             price1Observation: PriceObservationArray,
                                             poolObject: {pool: ethers.Contract, immutables: Immutables},
                                             baseTimeframe: Timeframe,
-                                            secondsBack: number
+                                            secondsBack: number,
+                                            rangeSeconds: number
                                         ) {
     let samplingInterval = baseTimeframe.seconds;
     let observationArray;
@@ -703,19 +705,19 @@ async function getPriceObservations(
     let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
     let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
 
-    // The following loop tries to retrieve as many observations possible as in the secondsBack parameter
+    // The following loop tries to retrieve as many observations possible as in the rangeSeconds parameter
     // If the request is reverted, the lookback period is reduced
     let observationsRetrieved = false;
     let lookbackPeriodReduction = 0;
     while(!observationsRetrieved) {
         observationArray = [];
-        let lookbackPeriod = secondsBack - lookbackPeriodReduction;
+        let lookbackPeriod = secondsBack + rangeSeconds - lookbackPeriodReduction;
         // If the lookback period is reduced to less than one hour, then a 20 minutes window is tried
-        if(lookbackPeriod === 0) {
+        if(lookbackPeriod <= secondsBack) {
             lookbackPeriod = 60 * 20;
         }
         try {
-            for(let interval = 0; interval <= lookbackPeriod; interval += samplingInterval) {
+            for(let interval = secondsBack; interval <= lookbackPeriod; interval += samplingInterval) {
                 observationArray.push(interval);
             }
 
@@ -734,7 +736,8 @@ async function getPriceObservations(
 
     let timestampMilliSeconds = Date.now();
     // Converting timestamp to seconds from milliseconds
-    let timestampSeconds = (timestampMilliSeconds/1000);
+
+    let timestampSeconds = observationArray !== undefined? timestampMilliSeconds / 1000 - observationArray[observationArray.length - 1] : timestampMilliSeconds / 1000;
     // Normalizing timestamp to the nearest multiple of the sampling interval
     timestampSeconds = timestampSeconds - timestampSeconds % samplingInterval;
 

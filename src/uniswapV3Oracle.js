@@ -473,7 +473,7 @@ function listPools() {
     }
 }
 exports.listPools = listPools;
-async function updatePrice(poolSymbol, baseTimeframe, minutesHistory, maxExtraMinutes) {
+async function updatePrice(poolSymbol, baseTimeframe, minutesAgo, rangeMinutes, maxExtraMinutes) {
     // console.log(numberObservations, 'number of observations');
     const poolObject = exports.poolsCollection[poolSymbol];
     // Retrieving token0 and token1
@@ -500,31 +500,35 @@ async function updatePrice(poolSymbol, baseTimeframe, minutesHistory, maxExtraMi
         price1Observation = exports.priceLibrary[price1Symbol];
     }
     console.log('Retrieving price history for', poolSymbol);
-    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesHistory);
+    await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesAgo, 60 * rangeMinutes);
 }
 exports.updatePrice = updatePrice;
-async function getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, secondsBack) {
+async function getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, secondsBack, rangeSeconds) {
     let samplingInterval = baseTimeframe.seconds;
     let observationArray;
     let amounts;
     // Retrieving token0 and token1
     let token0 = tokensLibrary[poolObject.immutables.token0.toUpperCase()];
     let token1 = tokensLibrary[poolObject.immutables.token1.toUpperCase()];
-    // The following loop tries to retrieve as many observations possible as in the secondsBack parameter
+    // The following loop tries to retrieve as many observations possible as in the rangeSeconds parameter
     // If the request is reverted, the lookback period is reduced
     let observationsRetrieved = false;
     let lookbackPeriodReduction = 0;
     while (!observationsRetrieved) {
         observationArray = [];
-        let lookbackPeriod = secondsBack - lookbackPeriodReduction;
+        let lookbackPeriod = secondsBack + rangeSeconds - lookbackPeriodReduction;
         // If the lookback period is reduced to less than one hour, then a 20 minutes window is tried
-        if (lookbackPeriod === 0) {
+        if (lookbackPeriod <= secondsBack) {
             lookbackPeriod = 60 * 20;
         }
         try {
-            for (let interval = 0; interval <= lookbackPeriod; interval += samplingInterval) {
+            for (let interval = secondsBack; interval <= lookbackPeriod; interval += samplingInterval) {
                 observationArray.push(interval);
             }
+            let date = new Date();
+            let dateMil = date.getTime() - observationArray[0] * 1000;
+            let dateYes = new Date(dateMil);
+            console.log(dateYes);
             amounts = await poolObject.pool.observe(observationArray);
             if (lookbackPeriodReduction > 0) {
                 console.log(`The lookback period had to be reduced to ${(lookbackPeriod) / 60} minutes for the ${token0.symbol}${token1.symbol} pair`);
@@ -537,7 +541,7 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
     }
     let timestampMilliSeconds = Date.now();
     // Converting timestamp to seconds from milliseconds
-    let timestampSeconds = (timestampMilliSeconds / 1000);
+    let timestampSeconds = observationArray !== undefined ? timestampMilliSeconds / 1000 - observationArray[observationArray.length - 1] : timestampMilliSeconds / 1000;
     // Normalizing timestamp to the nearest multiple of the sampling interval
     timestampSeconds = timestampSeconds - timestampSeconds % samplingInterval;
     let price0;
