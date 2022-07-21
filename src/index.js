@@ -131,16 +131,16 @@ const updateInterval = (oracleParameters.updateLookbackMinutes - 3) * 60 * 1000;
 // setInterval(updateOraclePrices, updateInterval, tokenPairsObject);
 
 const runUpdateSequence = async() => {
-    let modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 6)}
+    let modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 30)}
     await initializeOracle(tokenPairsObject, modifiedParameters);
 
-    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 12)}
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 36)}
     await updateOraclePrices(tokenPairsObject, modifiedParameters);
 
-    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 18)}
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 42)}
     await updateOraclePrices(tokenPairsObject, modifiedParameters);
 
-    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 24)}
+    modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 48)}
     await updateOraclePrices(tokenPairsObject, modifiedParameters);
     console.log('exiting')
 
