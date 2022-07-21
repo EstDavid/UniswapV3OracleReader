@@ -525,10 +525,6 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
             for (let interval = secondsBack; interval <= lookbackPeriod; interval += samplingInterval) {
                 observationArray.push(interval);
             }
-            let date = new Date();
-            let dateMil = date.getTime() - observationArray[0] * 1000;
-            let dateYes = new Date(dateMil);
-            console.log(dateYes);
             amounts = await poolObject.pool.observe(observationArray);
             if (lookbackPeriodReduction > 0) {
                 console.log(`The lookback period had to be reduced to ${(lookbackPeriod) / 60} minutes for the ${token0.symbol}${token1.symbol} pair`);

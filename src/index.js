@@ -124,7 +124,7 @@ class TokenPair {
 
 const tokenPairsObject = getTokenPairsObject(tokenSelectionETH, quoteTokensETH);
 
-initializeOracle(tokenPairsObject);
+// initializeOracle(tokenPairsObject, oracleParameters);
 
 const updateInterval = (oracleParameters.updateLookbackMinutes - 3) * 60 * 1000;
 
@@ -132,7 +132,7 @@ const updateInterval = (oracleParameters.updateLookbackMinutes - 3) * 60 * 1000;
 
 const runUpdateSequence = async() => {
     let modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1)}
-    await updateOraclePrices(tokenPairsObject, modifiedParameters);
+    await initializeOracle(tokenPairsObject, modifiedParameters);
 
     modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 6)}
     await updateOraclePrices(tokenPairsObject, modifiedParameters);
