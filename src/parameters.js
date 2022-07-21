@@ -5,7 +5,7 @@ const oracleParameters = {
     // Possible values: seconds1, seconds5, ..., seconds30, minutes1, ..., minutes30, ..., hours1, ...
     // For all the values check the 'timeframes: TimeframeCollection' object in 'uniswapV3Oracle.ts'
 
-    minutesAgo: 60 * (24 * 2 - 12),
+    minutesAgo: 0, // 60 * (24 * 2 - 12),
     // When initializing the pool object and making the first price data request, how far back
     // in time the request will go
 
