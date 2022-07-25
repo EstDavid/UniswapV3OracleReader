@@ -750,7 +750,7 @@ async function getPriceObservations(
                     // console.log(`Decreasing range to ${rangeSeconds - rangeReduction} seconds`);
                 }
             } else {
-                console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error}`);
+                console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${Object.keys(error)}`);
             }
         }
     }
