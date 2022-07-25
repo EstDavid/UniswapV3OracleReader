@@ -87,8 +87,8 @@ async function initializeOracle(tokenPairsObject, parameters) {
 
 async function updateOraclePrices(tokenPairsObject, parameters) {
     let baseTimeframe = uniswapV3Oracle.timeframes[parameters.baseTimeframe];
-    let minutesAgo = parameters.minutesAgo;
-    let rangeMinutes = parameters.rangeMinutes; 
+    let minutesAgo = parameters.updateLookbackMinutes;
+    let rangeMinutes = parameters.updateLookbackMinutes; 
     for(let tokenPairSymbol in tokenPairsObject) {
         let tokenPair = tokenPairsObject[tokenPairSymbol];
         // Call update price function only if:
