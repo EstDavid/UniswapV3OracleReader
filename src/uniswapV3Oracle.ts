@@ -731,6 +731,8 @@ async function getPriceObservations(
                 observationArray.push(interval);
             }
 
+            console.log(secondsToPeriodStart);
+
             amounts = await poolObject.pool.observe(observationArray);
 
             if(amounts.tickCumulatives[0] === undefined) {

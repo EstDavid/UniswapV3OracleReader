@@ -533,6 +533,7 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
             for (let interval = secondsToPeriodStart; interval >= secondsToPeriodEnd; interval -= samplingInterval) {
                 observationArray.push(interval);
             }
+            console.log(secondsToPeriodStart);
             amounts = await poolObject.pool.observe(observationArray);
             if (amounts.tickCumulatives[0] === undefined) {
                 console.log('Empty array was returned');
