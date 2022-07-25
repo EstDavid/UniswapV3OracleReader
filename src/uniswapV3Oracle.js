@@ -552,7 +552,7 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
                 }
             }
             else {
-                console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${Object.keys(error)}`);
+                console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error.reason !== undefined ? error.reason : error}`);
             }
         }
     }
