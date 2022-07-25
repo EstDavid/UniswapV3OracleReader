@@ -530,7 +530,7 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
             throw ('No prices were returned by the oracle');
         }
         try {
-            for (let interval = secondsToPeriodStart; interval >= secondsToPeriodEnd; interval -= samplingInterval) {
+            for (let interval = secondsToPeriodEnd; interval < secondsToPeriodStart; interval += samplingInterval) {
                 observationArray.push(interval);
             }
             amounts = await poolObject.pool.observe(observationArray);
@@ -561,11 +561,9 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
     timestampSeconds = timestampSeconds - timestampSeconds % samplingInterval;
     let price0;
     let price1;
-    let tickCumulatives = [];
     for (let i = 0; i < amounts.tickCumulatives.length; i += 1) {
         timestampSeconds -= samplingInterval;
         if (i > 0) {
-            tickCumulatives.push(amounts.tickCumulatives[i].toString());
             // Calculation from https://docs.uniswap.org/protocol/concepts/V3-overview/oracle
             let exponent = (amounts.tickCumulatives[i].sub(amounts.tickCumulatives[i - 1])) / samplingInterval;
             price1 = (1.0001 ** exponent) * 10 ** (token1.decimals - token0.decimals);
