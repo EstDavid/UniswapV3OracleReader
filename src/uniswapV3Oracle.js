@@ -533,28 +533,24 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
             for (let interval = secondsToPeriodStart; interval >= secondsToPeriodEnd; interval -= samplingInterval) {
                 observationArray.push(interval);
             }
-            console.log(secondsToPeriodStart);
             amounts = await poolObject.pool.observe(observationArray);
             if (amounts.tickCumulatives[0] === undefined) {
                 console.log('Empty array was returned');
             }
             else {
+                observationsRetrieved = true;
                 if (rangeReduction > 0) {
-                    observationsRetrieved = true;
                     console.log(`The start of the lookback period had to be taken from ${(secondsToPeriodEnd + rangeSeconds) / 60} to ${(secondsToPeriodStart) / 60} minutes for the ${token0.symbol}${token1.symbol} pair`);
                 }
             }
         }
         catch (error) {
             if (error.errorArgs !== undefined) {
-                if (error.errorArgs[0] === 'OLD') {
-                    rangeReduction = (secondsToPeriodStart - secondsToPeriodEnd) / 5; // Each time an OLD error is encountered, the current range is decreased by 1/5
-                    // console.log(`Decreasing range to ${rangeSeconds - rangeReduction} seconds`);
-                }
+                rangeReduction = (secondsToPeriodStart - secondsToPeriodEnd) / 5; // Each time an OLD error is encountered, the current range is decreased by 1/5
+                // console.log(`Decreasing range to ${rangeSeconds - rangeReduction} seconds`);
             }
             else {
                 console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error.reason !== undefined ? error.reason : error}`);
-                console.log(observationArray[0], observationArray[observationArray.length - 1]);
             }
         }
     }
