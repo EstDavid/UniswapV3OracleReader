@@ -545,7 +545,7 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
             }
         }
         catch (error) {
-            if (error.errorArgs !== undefined) {
+            if (typeof error === 'object') {
                 rangeReduction = (secondsToPeriodStart - secondsToPeriodEnd) / 5; // Each time an OLD error is encountered, the current range is decreased by 1/5
                 // console.log(`Decreasing range to ${rangeSeconds - rangeReduction} seconds`);
             }
