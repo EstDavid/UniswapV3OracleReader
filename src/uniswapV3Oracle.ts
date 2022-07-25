@@ -712,13 +712,19 @@ async function getPriceObservations(
     // The following loop tries to retrieve as many observations possible as in the rangeSeconds parameter
     // If the request is reverted, the lookback period is reduced
     let observationsRetrieved = false;
-    let secondsToPeriodEndReduction = 0;
+    let secondsToPeriodEnd = secondsToPeriodStart - rangeSeconds;
+    let rangeReduction = 0;
     while(!observationsRetrieved) {
         observationArray = [];
-        let secondsToPeriodEnd = secondsToPeriodStart - (rangeSeconds - secondsToPeriodEndReduction);
-        // If the lookback period is reduced to less than one hour, then a 5% rangeSeconds window is tried
-        if(secondsToPeriodEnd >= secondsToPeriodStart) {
-            secondsToPeriodEnd = secondsToPeriodStart - Math.max(rangeSeconds * 0.05, samplingInterval);
+        secondsToPeriodStart = secondsToPeriodStart - rangeReduction;
+
+        // Approaching the starting period to the nearest multiple of the sampling interval
+        secondsToPeriodStart -= secondsToPeriodStart % samplingInterval;
+
+        // If the lookback period is reduced to less than the sampling interval, the the loop is finished and no prices are found
+        if(secondsToPeriodStart <= secondsToPeriodEnd + samplingInterval) {
+            observationsRetrieved = true;
+            throw('No prices were returned by the oracle');
         }
         try {
             for(let interval = secondsToPeriodStart; interval >= secondsToPeriodEnd; interval -= samplingInterval) {
@@ -727,16 +733,26 @@ async function getPriceObservations(
 
             amounts = await poolObject.pool.observe(observationArray);
 
-            if(secondsToPeriodEndReduction > 0) {
-                console.log(`The lookback period had to be reduced to ${(secondsToPeriodEnd)/60} minutes for the ${token0.symbol}${token1.symbol} pair`);
+            if(amounts.tickCumulatives[0] === undefined) {
+                console.log('Empty array was returned');
+            } else {
+                if(rangeReduction > 0) {
+                    observationsRetrieved = true;
+                    console.log(`The start of the lookback period had to be taken from ${(secondsToPeriodEnd + rangeSeconds)/60} to ${(secondsToPeriodStart)/60} minutes for the ${token0.symbol}${token1.symbol} pair`);
+                }
             }
-            observationsRetrieved = true;
-        }
-        catch(error) {
-            console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error}`);
-            secondsToPeriodEndReduction += rangeSeconds * 0.2; // Each time an error is encountered, the reange is reduced 20%
-        }
 
+        }
+        catch(error: any) {
+            if(error.errorArgs !== undefined) {
+                if(error.errorArgs[0] === 'OLD') {
+                    rangeReduction = (secondsToPeriodStart - secondsToPeriodEnd) / 5; // Each time an OLD error is encountered, the current range is decreased by 1/5
+                    // console.log(`Decreasing range to ${rangeSeconds - rangeReduction} seconds`);
+                }
+            } else {
+                console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error}`);
+            }
+        }
     }
 
     let timestampMilliSeconds = Date.now();

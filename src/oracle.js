@@ -68,8 +68,8 @@ async function initializeOracle(tokenPairsObject, parameters) {
                 let subfolder = uniswapV3Oracle.priceLibrary[tokenPairSymbol].observationTimeframe.name
                 appendFile(tokenPairSymbol, uniswapV3Oracle.priceLibrary[tokenPairSymbol], subfolder);
             }
-            catch(symbol) {
-                console.log(`Oracle price array for ${symbol} could not be initialized`);
+            catch(error) {
+                console.log(`Oracle price array for ${tokenPairSymbol} could not be initialized. Reason: ${error}`);
             }
         }
         else {
