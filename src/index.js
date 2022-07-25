@@ -139,6 +139,8 @@ const retrievePrices = async() => {
     }
 }
 
+retrievePrices();
+
 setInterval(retrievePrices, updateInterval);
 
 // const runUpdateSequence = async() => {
