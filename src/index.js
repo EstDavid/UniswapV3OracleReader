@@ -11,6 +11,8 @@ var {tokensETH} = require('./tokens/tokenData.js');
 // [] Change all the file names to .json
 // [X] Check rules for new data inclusion/exclusion
 
+var poolsInitialized = false;
+var retrievingPrices = false;
 
 function getTokenPairsObject(tokensList, quoteTokens) {
     let tokenPairsObject = {};
@@ -124,11 +126,20 @@ class TokenPair {
 
 const tokenPairsObject = getTokenPairsObject(tokenSelectionETH, quoteTokensETH);
 
-initializeOracle(tokenPairsObject, oracleParameters);
-
 const updateInterval = (oracleParameters.updateLookbackMinutes - 3) * 60 * 1000;
 
-setInterval(updateOraclePrices, updateInterval, tokenPairsObject);
+const retrievePrices = async() => {
+    if (!poolsInitialized) {
+        await initializeOracle(tokenPairsObject, oracleParameters);
+        poolsInitialized = true;
+    } else if (!retrievingPrices) {
+        retrievingPrices = true;
+        await updateOraclePrices(tokenPairsObject, oracleParameters);
+        retrievingPrices = false;        
+    }
+}
+
+setInterval(retrievePrices, updateInterval);
 
 // const runUpdateSequence = async() => {
 //     let modifiedParameters = {...oracleParameters, minutesAgo: 60 * (24 * 1 + 30)}

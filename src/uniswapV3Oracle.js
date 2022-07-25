@@ -387,6 +387,10 @@ exports.timeframes = {
     days1: {
         name: '1 day',
         seconds: 1 * 24 * 60 * 60,
+    },
+    months1: {
+        name: '1 month',
+        seconds: 30 * 24 * 60 * 60,
     }
 };
 exports.poolsCollection = {};
@@ -503,7 +507,7 @@ async function updatePrice(poolSymbol, baseTimeframe, minutesAgo, rangeMinutes, 
     await getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, 60 * minutesAgo, 60 * rangeMinutes);
 }
 exports.updatePrice = updatePrice;
-async function getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, secondsBack, rangeSeconds) {
+async function getPriceObservations(price0Observation, price1Observation, poolObject, baseTimeframe, secondsToPeriodStart, rangeSeconds) {
     let samplingInterval = baseTimeframe.seconds;
     let observationArray;
     let amounts;
@@ -513,26 +517,27 @@ async function getPriceObservations(price0Observation, price1Observation, poolOb
     // The following loop tries to retrieve as many observations possible as in the rangeSeconds parameter
     // If the request is reverted, the lookback period is reduced
     let observationsRetrieved = false;
-    let lookbackPeriodReduction = 0;
+    let secondsToPeriodEndReduction = 0;
     while (!observationsRetrieved) {
         observationArray = [];
-        let lookbackPeriod = secondsBack + rangeSeconds - lookbackPeriodReduction;
-        // If the lookback period is reduced to less than one hour, then a 20 minutes window is tried
-        if (lookbackPeriod <= secondsBack) {
-            lookbackPeriod = 60 * 20;
+        let secondsToPeriodEnd = secondsToPeriodStart - (rangeSeconds - secondsToPeriodEndReduction);
+        // If the lookback period is reduced to less than one hour, then a 5% rangeSeconds window is tried
+        if (secondsToPeriodEnd >= secondsToPeriodStart) {
+            secondsToPeriodEnd = secondsToPeriodStart - Math.max(rangeSeconds * 0.05, samplingInterval);
         }
         try {
-            for (let interval = secondsBack; interval <= lookbackPeriod; interval += samplingInterval) {
+            for (let interval = secondsToPeriodStart; interval >= secondsToPeriodEnd; interval -= samplingInterval) {
                 observationArray.push(interval);
             }
             amounts = await poolObject.pool.observe(observationArray);
-            if (lookbackPeriodReduction > 0) {
-                console.log(`The lookback period had to be reduced to ${(lookbackPeriod) / 60} minutes for the ${token0.symbol}${token1.symbol} pair`);
+            if (secondsToPeriodEndReduction > 0) {
+                console.log(`The lookback period had to be reduced to ${(secondsToPeriodEnd) / 60} minutes for the ${token0.symbol}${token1.symbol} pair`);
             }
             observationsRetrieved = true;
         }
-        catch (_a) {
-            lookbackPeriodReduction += 60 * 60; // Each time an error is encountered, the lookback period is reduced 1 hour
+        catch (error) {
+            console.log(`Pool: ${poolObject.pool.address} (${token0.symbol}-${token1.symbol}) ${"\n"}Error: ${error}`);
+            secondsToPeriodEndReduction += rangeSeconds * 0.2; // Each time an error is encountered, the reange is reduced 20%
         }
     }
     let timestampMilliSeconds = Date.now();
