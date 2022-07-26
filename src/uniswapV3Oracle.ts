@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { computePoolAddress } from "@uniswap/v3-sdk";
-import { Token  } from "@uniswap/sdk-core";
+import { Token as UniswapToken } from "@uniswap/sdk-core";
 import { abi as IUniswapV3PoolABI } from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json";
 import { FeeAmount } from "@uniswap/v3-sdk";
 import JSBI from "jsbi";
@@ -65,6 +65,15 @@ interface PoolArgs {
     tokenA: Token,
     tokenB: Token,
     fee: string
+}
+
+// Token class is extended in order to add the logoURI information
+ class Token extends UniswapToken {
+    logoURI?: string;
+    constructor (chainId: number, address: string, decimals: number, symbol?: string, name?: string, logoURI?: string) {
+        super(chainId, address, decimals, symbol, name);
+        this.logoURI = logoURI;
+    };
 }
 
 // Interface for price observation
@@ -524,12 +533,14 @@ export const priceLibrary: PriceLibrary = {};
 // Creating a Tokens Collection from all the tokens found in tokens
 for(let token in tokens) {
     const newToken = new Token(
-        3,
+        1,
         tokens[token][2], // address 
         tokens[token][3], // decimals
         tokens[token][1], // symbol
-        tokens[token][0]  // name
+        tokens[token][0],  // name
+        tokens[token][4] // logoURI
     );
+
     tokensLibrary[tokens[token][2].toUpperCase()] = newToken;
     addressesDictionary[tokens[token][1]] = tokens[token][2].toUpperCase();
 }

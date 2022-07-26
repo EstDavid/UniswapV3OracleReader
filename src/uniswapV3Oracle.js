@@ -23,6 +23,14 @@ const factoryAddress = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
 ;
 const tokensLibrary = {};
 const addressesDictionary = {};
+// Token class is extended in order to add the logoURI information
+class Token extends sdk_core_1.Token {
+    constructor(chainId, address, decimals, symbol, name, logoURI) {
+        super(chainId, address, decimals, symbol, name);
+        this.logoURI = logoURI;
+    }
+    ;
+}
 // Interface for price observation
 class PriceObservationArray {
     constructor(symbol, baseToken, quoteToken, poolAddress, poolFee, observationTimeframe, extraMinutesData) {
@@ -397,10 +405,11 @@ exports.poolsCollection = {};
 exports.priceLibrary = {};
 // Creating a Tokens Collection from all the tokens found in tokens
 for (let token in tokens) {
-    const newToken = new sdk_core_1.Token(3, tokens[token][2], // address 
+    const newToken = new Token(1, tokens[token][2], // address 
     tokens[token][3], // decimals
     tokens[token][1], // symbol
-    tokens[token][0] // name
+    tokens[token][0], // name
+    tokens[token][4] // logoURI
     );
     tokensLibrary[tokens[token][2].toUpperCase()] = newToken;
     addressesDictionary[tokens[token][1]] = tokens[token][2].toUpperCase();
