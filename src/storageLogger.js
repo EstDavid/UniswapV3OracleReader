@@ -89,6 +89,8 @@ async function appendFile(pairSymbol, data, subfolder) {
 
         const newTimestamps = Object.keys(content.observations);
 
+        content.baseToken = data.baseToken;
+        content.quoteToken = data.quoteToken;
 
         // content.startTimestamp = Math.min(...newTimestamps);
         // content.endTimestamp = Math.max(...newTimestamps);
