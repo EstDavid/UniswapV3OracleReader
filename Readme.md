@@ -3,7 +3,18 @@
 The Uniswap V3 Oracle Reader (UV3OR) retrieves historical and current price data from Uniswap V3 pools and saves it to cloud storage. 
 
 
-The **UV3OR** represents the backend of the website App [Uniswap V3 Oracle Viewer (UV3OV)](https://dlp-token-exchange.herokuapp.com/ "Uniswap V3 Oracle Viewer"), which allows the user to consult price charts from the most liquid Uniswap V3 pools, on different timeframes.
+The **UV3OR** represents the backend of the website App [UniCharts](https://uniswapv3-charts.herokuapp.com/ "UniCharts"), which allows the user to consult price charts from the most liquid Uniswap V3 pools, on different timeframes.
+
+<div>
+    <p style="text-align:center;">
+        <a href="./assets/UniChartsPage.png">
+            <img src="./assets/UniChartsPage.png" alt="UniCharts Website" title="UniCharts Website"></img>
+            <p style="text-align:center;">
+                Live UniCharts Demo
+            </p>
+        </a>
+    </p>
+</div>
 
 ## Running the UV3OR to start storing price data
 -------
@@ -146,7 +157,7 @@ So for example, the file path `/30 seconds/WBTCWETH.json` contains price observa
 
 ## How it works under the hood
 --------
-The **UV3OR** (reader) uses the [Oracle capabilities](https://docs.uniswap.org/protocol/concepts/V3-overview/oracle "Oracle overview on Uniswap V3 docs") of Uniswap V3 pools to fetch price data, process it and store in the cloud. The **UV3OV** (viewer) then reads this data and uses it to display the price charts.
+The **UV3OR** (reader) uses the [Oracle capabilities](https://docs.uniswap.org/protocol/concepts/V3-overview/oracle "Oracle overview on Uniswap V3 docs") of Uniswap V3 pools to fetch price data, process it and store in the cloud. The **UniCharts** app then reads this data and uses it to display the price charts.
 
 ### Main files
 - `index.js` &rarr; Creates the `tokenPairsObject` with all possible token pair combinations, it then initializes the pools with `initializeOracle(tokenPairsObject)` and runs an update on the latest prices at a given time interval with `setInterval(updateOraclePrices, updateInterval, tokenPairsObject)`
