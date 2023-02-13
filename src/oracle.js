@@ -5,7 +5,7 @@ var {convertFromWei, convertToWei, isCorrectNumber} = require('./converter.js');
 var {oracleParameters} = require('./parameters');
 
 // LOGGER
-var {appendFile} = require('./storageLogger');
+var {appendFile} = require('./storageLoggerMongo');
 
 // BIG NUMBER
 const { BigNumber } = require("ethers");
