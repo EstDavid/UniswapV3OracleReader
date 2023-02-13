@@ -141,4 +141,5 @@ async function downloadIntoMemory(filename) {
     return content;
 }
 
-exports.appendFile = appendFile;
+exports.appendFile = appendFile
+exports.getSpecificDayFiles = getSpecificDayFiles
