@@ -4,8 +4,9 @@
   "description": "This App connects to the Uniswap v3 Oracle and retrieve pair prices in realtime",
   "main": "index.js",
   "scripts": {
-    "preinstall" : "node gcpSetup.js",
-    "start": "node src/index.js"
+    "preinstall": "node gcpSetup.js",
+    "start": "node src/index.js",
+    "debug": "node --inspect src/index.js"
   },
   "author": "David Esteban",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "ethers": "^5.6.9",
     "jsbi": "^4.3.0",
     "lodash": "^4.17.21",
+    "mongoose": "^6.9.1",
     "web3": "^1.7.4"
   }
 }
