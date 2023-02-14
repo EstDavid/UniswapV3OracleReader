@@ -1,3 +1,4 @@
+require('dotenv').config()
 var {tokenSelectionETH, oracleParameters, quoteTokensETH} = require('./parameters')
 
 var {initializeOracle, updateOraclePrices, poolsInitialized} = require('./oracle');
