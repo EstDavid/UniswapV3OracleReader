@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Pair = require('./models/pair')
+const Observation = require('./models/observation')
 
 mongoose.set('strictQuery', false)
 
@@ -15,21 +16,11 @@ mongoose.connect(url)
         console.log('error connecting to MongoDB', error.message)
     })
 
-const getEarliest = (earliest, observation) => {
-    const current = observation.timestamp
-    return current <= earliest ? current : earliest
-}
-
-const getLatest = (latest, observation) => {
-    const current = observation.timestamp
-    return current >= latest ? current : latest
-}
-
 const getObservationsArray = (observationsObject) => {
     const observationsArray = []
     for (let timestamp in observationsObject) {
         const observation = {
-            timestamp: new Date(parseInt(timestamp) * 1000),
+            _id: timestamp,
             price: observationsObject[timestamp]
         }
         observationsArray.push(observation)
@@ -37,69 +28,95 @@ const getObservationsArray = (observationsObject) => {
     return observationsArray
 }
 
+const getObservationId = (pair, timeframe) => {
+    return `${pair.symbol}-${timeframe.seconds}`
+}
+
 
 const updateObservationsData = (pair, timeframe, rawObservationsData) => {
+    const id = getObservationId(pair, timeframe)
+
     const observationsArray = getObservationsArray(rawObservationsData)
 
     observationsArray.sort((a, b) => {
-        return b.timestamp - a.timestamp
-    })
-
-    const observationsIndex = pair.observations.findIndex(observation => {
-        return observation.name === timeframe.name
+        return parseInt(b._id) - parseInt(a._id)
     })
 
     const maxUpdates = 10000
     let counter = 0
 
-    if (observationsIndex !== -1) {
-        const observationsData = pair.observations[observationsIndex].observationsData
-        const earliestObservation = observationsData.reduce(getEarliest, observationsData[0].timestamp)
-        const latestObservation = observationsData.reduce(getLatest, observationsData[0].timestamp)
-        console.log(`Earliest: ${earliestObservation.toDateString()} ${earliestObservation.toTimeString()}`)
-        console.log(`Latest: ${latestObservation.toDateString()} ${latestObservation.toTimeString()}`)
-
-        for (let i = 0; i < observationsArray.length; i += 1) {
-            const observation = observationsArray[i]
-            if (counter > maxUpdates) {
-                break
-            }
-
-            if ( 
-                observation.timestamp > latestObservation ||
-                observation.timestamp < earliestObservation || 
-                ( latestObservation === undefined && earliestObservation === undefined) 
-                ) {
-                console.clear()
-                console.log(`Updating observation ${i} of ${observationsArray.length} for ${pair.symbol}`)
+    Observation.findById(id)
+        .then(observation => {
+            if (observation !== null && observation !== undefined) {
+                const data = observation.data
+                const earliestObservation = observation.earliest
+                const latestObservation = observation.latest
                 console.log(`Earliest: ${earliestObservation.toDateString()} ${earliestObservation.toTimeString()}`)
                 console.log(`Latest: ${latestObservation.toDateString()} ${latestObservation.toTimeString()}`)
-                console.log(`Current: ${observation.timestamp.toDateString()} ${observation.timestamp.toTimeString()}`)                
         
-                observationsData.push(observation)
-                counter += 1
+                for (let i = 0; i < observationsArray.length; i += 1) {
+                    const observation = observationsArray[i]
+                    const timestamp = new Date(parseInt(observation._id) * 1000)
+                    if (counter > maxUpdates) {
+                        break
+                    }
+        
+                    if ( 
+                        timestamp > latestObservation ||
+                        timestamp < earliestObservation || 
+                        ( latestObservation === undefined && earliestObservation === undefined) 
+                        ) {
+                        const currentTimestamp = new Date(parseInt(observation._id) * 1000)
+                        console.clear()
+                        console.log(`Updating observation ${i} of ${observationsArray.length} for ${pair.symbol}`)
+                        console.log(`Earliest: ${earliestObservation.toDateString()} ${earliestObservation.toTimeString()}`)
+                        console.log(`Latest: ${latestObservation.toDateString()} ${latestObservation.toTimeString()}`)
+                        console.log(`Current: ${currentTimestamp.toDateString()} ${currentTimestamp.toTimeString()}`)                
+                
+                        data.push(observation)
+                        counter += 1
+                    }
+                }
+
+                observation.save()
+                    .then(console.log(`Added new observations (${observation.data.length}) to ${observation.id} observation`))
+                    .catch(error => {
+                        console.log(error)
+                        console.log(`Error adding new observations to ${observation.id} observation`)
+                    })  
+            } else {
+                const newObservation = {
+                    _id: id,
+                    symbol: pair.symbol,
+                    timeframe: {
+                        name: timeframe.name,
+                        seconds: timeframe.seconds,
+                    },
+                    data: [],
+                }
+
+                observation = new Observation(newObservation)
+                
+                for (let i = 0; i < observationsArray.length; i += 1) {
+                    const observationPoint = observationsArray[i]
+                    if (counter > maxUpdates) {
+                        break
+                    }
+        
+                    observation.data.push(observationPoint)
+                    counter += 1   
+                }
+
+                observation.save()
+                    .then(result => {
+                        console.log(`Added observation ${observation.id} with (${observation.data.length}) observations`)
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        console.log(`Error creating observation ${observation.id}`)
+                    })  
             }
-        }
-
-    } else {
-        const newObservations = {
-            name: timeframe.name,
-            seconds: timeframe.seconds,
-            observationsData: [],
-        }
-
-        pair.observations.push(newObservations)
-
-        for (let i = 0; i < observationsArray.length; i += 1) {
-            const observation = observationsArray[i]
-            if (counter > maxUpdates) {
-                break
-            }
-
-            pair.observations[pair.observations.length - 1].observationsData.push(observation)
-            counter += 1   
-        }
-    }
+        })
 }
 
 async function appendObservations(pairSymbol, data) {
@@ -107,18 +124,11 @@ async function appendObservations(pairSymbol, data) {
 
     console.log('Appending', data.symbol)
 
-    Pair.find({symbol: data.symbol})
-        .then(result => {
-            let [pair] = result
-            if (pair !== undefined) {
+    Pair.findById(data.symbol)
+        .then(pair => {
+            if (pair !== null && pair !== undefined) {
                 updateObservationsData(pair, timeframe, data.observations)
 
-                pair.save()
-                    .then(console.log(`Added new observations (${pair.observations[0].observationsData.length}) to ${data.symbol} pair`))
-                    .catch(error => {
-                        console.log(error)
-                        console.log(`Error adding new observations to ${data.symbol} pair`)
-                    })
             } else {
                     const {
                         symbol,
@@ -131,6 +141,7 @@ async function appendObservations(pairSymbol, data) {
                     } = data
 
                     pair = new Pair({
+                        _id: symbol,
                         symbol,
                         baseToken,
                         quoteToken,
@@ -138,7 +149,6 @@ async function appendObservations(pairSymbol, data) {
                         poolFee,
                         arrayTypes,
                         extraMinutesData,
-                        observations: []
                     })
 
                 updateObservationsData(pair, timeframe, data.observations)
