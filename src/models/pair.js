@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const priceDataSchema = require('./priceData')
 
 const tokenSchema = new mongoose.Schema({
     chanId: Number,
@@ -21,7 +20,6 @@ const pairSchema = new mongoose.Schema({
     poolFee: String,
     arrayTypes: [String],
     extraMinutesData: Number,
-    priceData: priceDataSchema,
 })
 
 pairSchema.set('toJSON', {
