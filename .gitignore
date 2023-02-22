@@ -17,3 +17,6 @@ googlecloud/
 oracle/
 
 src/test
+
+legacyData/
+legacyData/*
