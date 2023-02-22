@@ -66,7 +66,7 @@ const updateTimeseries = async (pair, rawObservationsData, seconds) => {
             price: parseFloat(rawObservationsData[timestamp].toPrecision(8)),
             metadata: {
                 symbol: pair.symbol,
-                seconds: pair.priceData.timeframe.seconds
+                seconds: seconds
             }
         }
         priceCollectionArray.push(observation)
